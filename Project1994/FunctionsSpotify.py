@@ -23,7 +23,7 @@ def GetHeaders(Token):
     else:
         raise RuntimeError('GetHeaders Error: No Token')
 #
-def GetSearchURL(SearchTerm,SearchType):#,SearchLimit=20,SearchOffset=5):
+def GetSearchURL(SearchTerm,SearchType):
     "This takes in Search Term (e.g., Sleep) and Search Type (e.g., artist) and constructs the Search URL"
     SearchURL = 'https://api.spotify.com/v1/search?q=' + SearchTerm + '&type=' + SearchType
     return SearchURL
@@ -49,8 +49,7 @@ def GetTrackAudioFeaturesURL(TrackID):
 #
 def OpenSpotifySearch(SearchTerm,SearchType):
     SearchURL = 'https://open.spotify.com/search/' + SearchType + '/' + SearchTerm
-    SearchRequest = requests.get(SearchURL)#,headers=Headers)
-    #SearchResults = SearchRequest.json()
+    SearchRequest = requests.get(SearchURL)
     return SearchRequest
 #
 def SubmitSearchRequest(SearchURL,Headers):
@@ -62,7 +61,6 @@ def SubmitSearchRequest(SearchURL,Headers):
 def SubmitSearchRequestTest(SearchURL,Headers):
     "This submits the GET request to search Spotify and return results in JSON."
     SearchRequest = requests.get(SearchURL,headers=Headers)
-    #SearchResults = SearchRequest.json()
     return SearchRequest
 #
 def SearchSpotify(SearchTerm,SearchType):
@@ -76,9 +74,9 @@ def SearchSpotify(SearchTerm,SearchType):
     else:
         raise RuntimeError('SearchSpotify Error: No Results')
 #
-def BrowseArtistNames(ArtistName):#,ResultLimit=20,ResultOffset=5):
+def BrowseArtistNames(ArtistName):
     "This puts the pieces together to search Spotify and return results as a list."
-    searchurl = GetSearchURL(ArtistName,'artist')#,ResultLimit,ResultOffset)
+    searchurl = GetSearchURL(ArtistName,'artist')
     Token = GetToken()
     Headers = GetHeaders(Token)
     results = SubmitSearchRequest(searchurl,Headers)
@@ -87,9 +85,9 @@ def BrowseArtistNames(ArtistName):#,ResultLimit=20,ResultOffset=5):
         resultlist.append(result['name'] + ',' + result['id'])
     return resultlist
 #
-def BrowseArtistNamesDict(ArtistName,ResultorDisplay='R'):#,ExactMatchOnly='N'):#,ResultLimit=20,ResultOffset=5):
+def BrowseArtistNamesDict(ArtistName,ResultorDisplay='R'):
     "This puts the pieces together to search Spotify and return results as a dictionary."
-    searchurl = GetSearchURL(ArtistName,'artist')#,ResultLimit,ResultOffset)
+    searchurl = GetSearchURL(ArtistName,'artist')
     token = GetToken()
     headers = GetHeaders(token)
     results = SubmitSearchRequest(searchurl, headers)
@@ -176,8 +174,8 @@ def BrowseAlbumTracks(AlbumID, SearchLimit=20):
                           )
     return Resultlist
 #
-def GetAlbumTrackIDs(AlbumID):#, SearchLimit=20):
-    SearchURL = BrowseAlbumTracksSearchURL(AlbumID)#, str(SearchLimit))
+def GetAlbumTrackIDs(AlbumID):
+    SearchURL = BrowseAlbumTracksSearchURL(AlbumID)
     Resultlist = []
     Token = GetToken()
     Headers = GetHeaders(Token)
@@ -217,17 +215,86 @@ def GetArtistTopTracks(ArtistID,ResultorDisplay='R',Country='US'):
         return AlbumDict
 #
 def GetTrackAudioFeatures(TrackID):
+    "This gets audio features of a track like tempo and time signature."
     SearchURL = GetTrackAudioFeaturesURL(TrackID)
     Token = GetToken()
     Headers = GetHeaders(Token)
     SearchResults = SubmitSearchRequest(SearchURL, Headers)
     return SearchResults
 #
+def GetTrackSearchUrl(TrackID):
+    "Takes the Track ID and constructs the track search URL"
+    SearchURL = "https://api.spotify.com/v1/tracks/" + TrackID
+    return SearchURL
+
+def GetTrackInfo(TrackID):
+    "This gets information about a track like name and popularity."
+    SearchURL = GetTrackSearchUrl(TrackID)
+    Token = GetToken()
+    Headers = GetHeaders(Token)
+    SearchResults = SubmitSearchRequest(SearchURL, Headers)
+    if SearchResults:
+        return SearchResults
+    else:
+        raise RuntimeError('SearchSpotify Error: No Results')
+
+def GetSeveralTracksInfoSearchUrl(TrackIdsList):
+    "Takes a list of Track IDs and constructs the get several tracks search URL"
+    SearchURL = "https://api.spotify.com/v1/tracks?ids=" + TrackIdsList
+    return SearchURL
+
+def GetSeveralTracksInfoResults(TrackIdsList):
+    "This gets information about several tracks like name and popularity."
+    SearchURL = GetSeveralTracksInfoSearchUrl(TrackIdsList)
+    Token = GetToken()
+    Headers = GetHeaders(Token)
+    SearchResults = SubmitSearchRequest(SearchURL, Headers)
+    if SearchResults:
+        return SearchResults
+    else:
+        raise RuntimeError('SearchSpotify Error: No Results')
+
+
+def GetSeveralTracksFeaturesSearchUrl(TrackIdsList):
+    "Takes a list of Track IDs and constructs the get several tracks search URL"
+    SearchURL = "https://api.spotify.com/v1/audio-features?ids=" + TrackIdsList
+    return SearchURL
+
+def GetSeveralTracksFeaturesResults(TrackIdsList):
+    "This gets information about several tracks like name and popularity."
+    SearchURL = GetSeveralTracksFeaturesSearchUrl(TrackIdsList)
+    Token = GetToken()
+    Headers = GetHeaders(Token)
+    SearchResults = SubmitSearchRequest(SearchURL, Headers)
+    if SearchResults:
+        return SearchResults
+    else:
+        raise RuntimeError('SearchSpotify Error: No Results')
+
+def GetAlbumsByYearSearchUrl(SearchYear,Offset=0,Limit="50"):
+    SearchUrlPrefix = "https://api.spotify.com/v1/search?query=year%3A" 
+    OffsetSuffix = "&type=album&offset="
+    LimitSuffix = "&limit="
+    SearchURL = SearchUrlPrefix + SearchYear + OffsetSuffix + Offset + LimitSuffix + Limit
+    return SearchURL
+
+def GetAlbumsByYearResults(SearchYear,Offset="0"):
+    "This gets information about several tracks like name and popularity."
+    SearchURL = GetAlbumsByYearSearchUrl(SearchYear,Offset)
+    Token = GetToken()
+    Headers = GetHeaders(Token)
+    SearchResults = SubmitSearchRequest(SearchURL, Headers)
+    if SearchResults:
+        return SearchResults
+    else:
+        raise RuntimeError('SearchSpotify Error: No Results')
+
+#
 def GetAlbumAudioFeatures(ArtistSearchInput=''):
     '''imports:'''
     import sys
-    from PythonFunctions import FunctionsPython 
-    from Project1994 import Variables
+    import FunctionsPython 
+    import Variables
     consoleprint = sys.stdout
     '''variables'''
     WriteFilePath = "C:\\Users\\Charlie\\Documents\\BrunoMarsVolta\\BrunoMarsVoltaAudioFeaturesAnalysis.csv"
@@ -305,9 +372,8 @@ def GetAlbumAudioFeatures(ArtistSearchInput=''):
 #
 def GetAudioFeatures(SearchTrackName=''):
     '''imports'''
-    #from Project1994 import FunctionsSpotify
-    from PythonFunctions import FunctionsPython
-    from Project1994 import Variables
+    import FunctionsPython
+    import Variables
     '''variables'''
     SongChooseNmbPrompt = Variables.ChooseNmbPrompt
     '''script'''
